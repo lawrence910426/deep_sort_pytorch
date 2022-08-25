@@ -75,7 +75,7 @@ class Sharingan(object):
         # initialize detection line
         detection_counter = Counter(
             self.vdo.get(cv2.CAP_PROP_FPS),
-            Line(*self.args.detection_line.split(","))
+            Line(*self.args.detector_line.split(","))
         )
 
         results = []
