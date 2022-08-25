@@ -17,6 +17,7 @@ from utils.parser import get_config
 from utils.log import get_logger
 from utils.io import write_results
 from stabilization import Stabilizer
+from counter import Counter, Box, Line
 
 
 class Sharingan(object):
@@ -71,6 +72,12 @@ class Sharingan(object):
         stable_fixer = Stabilizer(self.args.stable_period)
         fixed_transform = stable_fixer.get_transform(self.vdo)
 
+        # initialize detection line
+        detection_counter = Counter(
+            self.vdo.get(cv2.CAP_PROP_FPS),
+            Line(*self.args.detection_line.split(","))
+        )
+
         results = []
         idx_frame = 0
         while self.vdo.grab():
@@ -88,8 +95,11 @@ class Sharingan(object):
             # do detection
             bbox_xywh, cls_conf, cls_ids = self.detector(im)
 
-            # select person class
-            mask = cls_ids == 0
+            # select traffic class
+            mask = False
+            mask |= cls_ids == 2 # car
+            mask |= cls_ids == 5 # bus
+            mask |= cls_ids == 7 # truck
 
             bbox_xywh = bbox_xywh[mask]
             # bbox dilation just in case bbox too small, delete this line if using a better pedestrian detector
@@ -106,10 +116,13 @@ class Sharingan(object):
                 identities = outputs[:, -1]
                 ori_im = draw_boxes(ori_im, bbox_xyxy, identities)
 
-                for bb_xyxy in bbox_xyxy:
+                for i in range(len(outputs)):
+                    bb_xyxy, bb_id = bbox_xyxy[i], identities[i]
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
-                    
-
+                    print("xyxy of boundary boxes:", bb_xyxy)
+                    detection_counter.update(bb_id, Box(*bb_xyxy))
+                
+                print("Flow:", detection_counter.getFlow())
                 results.append((idx_frame - 1, bbox_tlwh, identities))
 
             end = time.time()
@@ -146,7 +159,7 @@ def parse_args():
     parser.add_argument("--cpu", dest="use_cuda", action="store_false", default=True)
 
     # Sharingan specific parameters
-    parser.add_argument("--corners", type=str)
+    parser.add_argument("--detector_line", type=str)
     parser.add_argument("--smooth_frames", type=int)
     parser.add_argument("--stable_period", type=int)
     return parser.parse_args()

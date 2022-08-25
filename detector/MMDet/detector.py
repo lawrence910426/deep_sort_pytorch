@@ -2,8 +2,8 @@ import logging
 import numpy as np
 import torch
 
-from mmdet.apis import init_detector, inference_detector
-from .mmdet_utils import xyxy_to_xywh
+# from mmdet.apis import init_detector, inference_detector
+# from .mmdet_utils import xyxy_to_xywh
 
 class MMDet(object):
     def __init__(self, cfg_file, checkpoint_file, score_thresh=0.7,
