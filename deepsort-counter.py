@@ -16,8 +16,8 @@ from utils.draw import draw_boxes
 from utils.parser import get_config
 from utils.log import get_logger
 from utils.io import write_results
-from stabilization import Stabilizer
-from counter import Counter, Box, Line
+from stabilization.stabilizer import Stabilizer
+from counter.counter import Counter, Box, Line
 
 
 class Sharingan(object):
