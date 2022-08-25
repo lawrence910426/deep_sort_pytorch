@@ -159,9 +159,8 @@ def parse_args():
     parser.add_argument("--cpu", dest="use_cuda", action="store_false", default=True)
 
     # Sharingan specific parameters
-    parser.add_argument("--detector_line", type=str)
-    parser.add_argument("--smooth_frames", type=int)
-    parser.add_argument("--stable_period", type=int)
+    parser.add_argument("--detector_line", type=str, default='0,0,1000,1000')
+    parser.add_argument("--stable_period", type=int, default=300)
     return parser.parse_args()
 
 

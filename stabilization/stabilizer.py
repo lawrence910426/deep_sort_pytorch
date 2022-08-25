@@ -8,7 +8,7 @@ class Stabilizer:
 	def movingAverage(self, curve, radius): 
 		window_size = 2 * radius + 1
 		# Define the filter 
-		f = np.ones(window_size)/window_size 
+		f = np.ones(window_size) / window_size 
 		# Add padding to the boundaries 
 		curve_pad = np.lib.pad(curve, (radius, radius), 'edge') 
 		# Apply convolution 
