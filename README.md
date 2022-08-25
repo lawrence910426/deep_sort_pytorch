@@ -1,4 +1,4 @@
-# Deep Sort with PyTorch
+# Deep Sort with PyTorch (with traffic counting features)
 
 ![](demo/demo.gif)
 
