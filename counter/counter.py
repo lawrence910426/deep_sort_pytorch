@@ -1,31 +1,61 @@
+import numpy as np
+
 class Box:
     def __init__(self, x1, y1, x2, y2):
         self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
 
+class Line:
+    def __init__(self, x1, y1, x2, y2):
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
 
 class Counter:
-    def __init__(self, box: Box):
-        # State descriptions
-        # 0 = Neutral
-        # 1 = Crossed over left border
-        # 2 = Crossed over right border
+    def __init__(self, fps, detector: Line):
+        self.detector = detector
+        self.fps = fps
+        # Stores the inner product of last second between
+        # detector and the vehicle as a queue. The queue
+        # has length of fps.
         self.state = {}
-
-    def getFlow(self):
-        return {
+        self.flow = {
             "Forward": 0,
             "Reverse": 0
         }
 
-    def hover(self, a: Box, b: Box):
-        # Ensures a.x1 < b.x1
-        if a.x1 > b.x1:
-            a, b = b, a
-        
-        if a.y1 < b.y2 and b.x1 < b.x2:
-            return True
-        if b.y1 < a.y2 and b.x1 < b.x2:
-            return True
+    def getFlow(self):
+        return self.flow
 
-    def update(self, id, coord: Box):
-        pass
+    def hover(self, vehicle: Box):
+        seg, rect = self.detector, vehicle
+        inside = lambda x, y: rect.x1 <= x and x <= rect.x2 and rect.y1 <= y and y <= rect.y2
+        if inside(seg.x1, seg.y1) and inside(seg.x2, seg.y2):
+            return True
+        
+        formula = lambda x: (seg.y2 - seg.y1) / (seg.x2 - seg.x1) * (x - seg.x1) + seg.y1
+        if rect.y1 <= formula(rect.x1) and formula(rect.x1) <= rect.y2 and \
+           seg.x1 <= rect.x1 and rect.x1 <= seg.x2:
+           return True
+        if rect.y1 <= formula(rect.x2) and formula(rect.x2) <= rect.y2 and \
+           seg.x1 <= rect.x2 and rect.x2 <= seg.x2:
+           return True
+
+    def update(self, id, vehicle: Box):
+        if not (id in self.state):
+            self.state[id] = { "Counted": False, "InnerProduct": [] }
+        
+        if self.state[id]["Counted"]:
+            return
+
+        if len(self.state[id]["InnerProduct"]) > self.fps:
+            self.state[id].pop_front()
+        
+        centroid = (vehicle.x1 + vehicle.x2) / 2, (vehicle.y1 + vehicle.y2) / 2
+        midpoint = (self.detector.x1 + self.detector.x2) / 2, (self.detector.y1 + self.detector.y2) / 2
+        vector = self.detector.x2 - self.detector.x1, self.detector.y2 - self.detector.y1
+        inner_prod = np.dot(np.array(vector), np.array(centroid) - np.array(np.midpoint))
+        self.state[id]["InnerProduct"].push_back(inner_prod)
+
+        if self.hover(vehicle):
+            self.state[id]["Counted"] = True
+            positive = sum([1 if item > 0 else 0 for item in self.state[id]["InnerProduct"]])
+            negative = self.fps - positive
+            self.flow["Forward" if positive > negative else "Reverse"] += 1

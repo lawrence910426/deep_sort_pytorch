@@ -108,6 +108,7 @@ class Sharingan(object):
 
                 for bb_xyxy in bbox_xyxy:
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
+                    
 
                 results.append((idx_frame - 1, bbox_tlwh, identities))
 
