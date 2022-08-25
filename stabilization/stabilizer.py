@@ -73,10 +73,7 @@ class Stabilizer:
 		return transforms_smooth
 
 
-	def fix_frame(self, frame, transform):
-		width = int(cp.get(cv2.CAP_PROP_FRAME_WIDTH)) 
-		height = int(cp.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
+	def fix_frame(self, frame, transform, width, height):
 		dx = transform[0]
 		dy = transform[1]
 		da = transform[2]
@@ -116,7 +113,7 @@ if __name__ == 'main':
 		succ, curr = cp.read()
 		if not succ:
 			break
-		frame = fixer.fix_frame(succ, transform[i])
+		frame = fixer.fix_frame(succ, transform[i], width, height)
 		out.write(frame)
 		print("Frame: " + str(i) +  "/" + str(n_frames) + " -  Stabilizing video")
 

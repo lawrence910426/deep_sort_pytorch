@@ -77,6 +77,8 @@ class Sharingan(object):
             self.vdo.get(cv2.CAP_PROP_FPS),
             Line(*self.args.detector_line.split(","))
         )
+        width = int(self.vdo.get(cv2.CAP_PROP_FRAME_WIDTH)) 
+        height = int(self.bdo.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         results = []
         idx_frame = 0
@@ -89,7 +91,7 @@ class Sharingan(object):
 
             # fetch image and fix image
             _, ori_im = self.vdo.retrieve()
-            fixed_im = stable_fixer.fix_frame(ori_im, fixed_transform[idx_frame])
+            fixed_im = stable_fixer.fix_frame(ori_im, fixed_transform[idx_frame], width, height)
             im = cv2.cvtColor(fixed_im, cv2.COLOR_BGR2RGB)
 
             # do detection
