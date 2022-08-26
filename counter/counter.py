@@ -48,13 +48,13 @@ class Counter:
             return
 
         if len(self.state[id]["InnerProduct"]) > self.fps:
-            self.state[id].pop_front()
+            self.state[id].pop(0)
         
         centroid = (vehicle.x1 + vehicle.x2) / 2, (vehicle.y1 + vehicle.y2) / 2
         midpoint = (self.detector.x1 + self.detector.x2) / 2, (self.detector.y1 + self.detector.y2) / 2
         vector = self.detector.x2 - self.detector.x1, self.detector.y2 - self.detector.y1
         inner_prod = np.dot(np.array(vector), np.array(centroid) - np.array(midpoint))
-        self.state[id]["InnerProduct"].push_back(inner_prod)
+        self.state[id]["InnerProduct"].append(inner_prod)
 
         if self.hover(vehicle):
             self.state[id]["Counted"] = True
