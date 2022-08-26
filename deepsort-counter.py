@@ -78,10 +78,11 @@ class Sharingan(object):
             Line(*self.args.detector_line.split(","))
         )
         width = int(self.vdo.get(cv2.CAP_PROP_FRAME_WIDTH)) 
-        height = int(self.bdo.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        height = int(self.vdo.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         results = []
         idx_frame = 0
+        self.vdo.set(cv2.CAP_PROP_POS_FRAMES, 0) 
         while self.vdo.grab():
             idx_frame += 1
             if idx_frame % self.args.frame_interval:
