@@ -51,8 +51,8 @@ class Sharingan(object):
             os.makedirs(self.args.save_path, exist_ok=True)
 
             # path of saved video and results
-            self.save_video_path = os.path.join(self.args.save_path, "results.avi")
-            self.save_results_path = os.path.join(self.args.save_path, "results.txt")
+            self.save_video_path = os.path.join(self.args.save_path, self.args.output_name + ".avi")
+            self.save_results_path = os.path.join(self.args.save_path, self.args.output_name + ".txt")
 
             # create video writer
             fourcc = cv2.VideoWriter_fourcc(*'MJPG')
@@ -87,6 +87,8 @@ class Sharingan(object):
             idx_frame += 1
             if idx_frame % self.args.frame_interval:
                 continue
+            if idx_frame >= len(fixed_transform):
+                break
 
             start = time.time()
 
@@ -122,7 +124,6 @@ class Sharingan(object):
                 for i in range(len(outputs)):
                     bb_xyxy, bb_id = bbox_xyxy[i], identities[i]
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
-                    print("xyxy of boundary boxes:", bb_xyxy)
                     detection_counter.update(bb_id, Box(*bb_xyxy))
                 
                 print("Flow:", detection_counter.getFlow())
@@ -164,8 +165,8 @@ def parse_args():
     # Sharingan specific parameters
     parser.add_argument("--detector_line", type=str, default='0,0,1000,1000')
     parser.add_argument("--stable_period", type=int, default=300)
+    parser.add_argument("--output_name", type=str, default='results')
     return parser.parse_args()
-
 
 if __name__ == "__main__":
     args = parse_args()

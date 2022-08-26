@@ -48,7 +48,7 @@ class Counter:
             return
 
         if len(self.state[id]["InnerProduct"]) > self.fps:
-            self.state[id].pop(0)
+            self.state[id]["InnerProduct"].pop(0)
         
         centroid = (vehicle.x1 + vehicle.x2) / 2, (vehicle.y1 + vehicle.y2) / 2
         midpoint = (self.detector.x1 + self.detector.x2) / 2, (self.detector.y1 + self.detector.y2) / 2

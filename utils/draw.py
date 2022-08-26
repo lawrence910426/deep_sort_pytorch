@@ -13,7 +13,7 @@ def compute_color_for_labels(label):
 
 
 def draw_boxes(img, bbox, identities=None, offset=(0,0)):
-    for i,box in enumerate(bbox):
+    for i, box in enumerate(bbox):
         x1,y1,x2,y2 = [int(i) for i in box]
         x1 += offset[0]
         x2 += offset[0]
@@ -29,7 +29,17 @@ def draw_boxes(img, bbox, identities=None, offset=(0,0)):
         cv2.putText(img,label,(x1,y1+t_size[1]+4), cv2.FONT_HERSHEY_PLAIN, 2, [255,255,255], 2)
     return img
 
-
+def draw_flow(img, flow):
+    keys = flow.keys()
+    for i in range(len(keys)):
+        k = keys[i]
+        label = k + ": " + flow[k]
+        t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2 ,2)[0]
+        cv2.putText(
+            img, label, (t_size[0] + 3, t_size[1] * (i + 1) + 4), 
+            cv2.FONT_HERSHEY_PLAIN, 2, [255,255,255], 2
+        )
+    return img
 
 if __name__ == '__main__':
     for i in range(82):
