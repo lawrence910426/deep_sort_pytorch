@@ -102,6 +102,7 @@ class Sharingan(object):
             # fix image. stabilize then foreground masking
             fixed_im = stable_fixer.fix_frame(ori_im, fixed_transform[idx_frame], width, height)
             fgMask = self.backSub.apply(fixed_im)
+            fgMask = np.stack([fgMask, fgMask, fgMask], axis=2)
             fg_im = np.multiply(fixed_im, fgMask)
 
             # convert to rgb
