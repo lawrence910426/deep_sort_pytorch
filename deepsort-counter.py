@@ -101,7 +101,20 @@ class Sharingan(object):
 
             # fix image. stabilize then foreground masking
             fixed_im = stable_fixer.fix_frame(ori_im, fixed_transform[idx_frame], width, height)
-            fgMask = self.backSub.apply(fixed_im)
+            fgMaskRaw = self.backSub.apply(fixed_im)
+            fgMask = np.zeros(fgMaskRaw.shape)
+
+            # a pixel become permeable iff (-5, +5) is foreground
+            for i in range(fgMaskRaw.shape[0]):
+                for j in range(fgMaskRaw.shape[1]):
+                    if fgMaskRaw[i][j] > 0.8:
+                        for h in range(-5, 6):
+                            for w in range(-5, 6):
+                                if 0 <= i + h and i + h < fgMaskRaw.shape[0] and \
+                                   0 <= j + w and j + w < fgMaskRaw.shape[1]:
+                                   fgMask[i] = 1
+            
+            # mask out background
             fgMask = np.stack([fgMask, fgMask, fgMask], axis=2)
             fg_im = np.multiply(fixed_im, fgMask)
 
@@ -134,20 +147,21 @@ class Sharingan(object):
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
                     detection_counter.update(bb_id, Box(*bb_xyxy))
                 
-                fg_im = draw_boxes(fg_im, bbox_xyxy, identities)
-                fg_im = draw_flow(fg_im, detection_counter.getFlow())
-                fg_im = draw_detector(fg_im, None, None, None, None)
+                fg_im_rgb = draw_boxes(fg_im_rgb, bbox_xyxy, identities)
                 print("Flow:", detection_counter.getFlow())
                 results.append((idx_frame - 1, bbox_tlwh, identities))
+
+            fg_im_rgb = draw_flow(fg_im_rgb, detection_counter.getFlow())
+            fg_im_rgb = draw_detector(fg_im_rgb, None, None, None, None)
 
             end = time.time()
 
             if self.args.display:
-                cv2.imshow("test", fg_im)
+                cv2.imshow("test", fg_im_rgb)
                 cv2.waitKey(1)
 
             if self.args.save_path:
-                self.writer.write(fg_im)
+                self.writer.write(fg_im_rgb)
 
             # save results
             write_results(self.save_results_path, results, 'mot')
