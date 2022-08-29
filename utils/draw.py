@@ -45,7 +45,7 @@ def draw_flow(img, flow):
 foreground = cv2.imread('../counter/detector.png')
 def draw_detector(background, detector: Line):
     # normalize alpha channels from 0-255 to 0-1
-    alpha_background = background[:,:,3] / 255.0
+    alpha_background = np.ones((background.shape[0], background.shape[1]))
     alpha_foreground = foreground[:,:,3] / 255.0
 
     # set adjusted colors
@@ -56,7 +56,6 @@ def draw_detector(background, detector: Line):
                 y = detector.y1 + j / foreground.shape[1] * detector.y2
                 background[x, y, col] = alpha_foreground[i, j] * foreground[i, j, col] + \
                     alpha_background * background[x, y, col] * (1 - alpha_foreground[i, j])     
-                background[x, y, 3] = (1 - (1 - alpha_foreground[i, j]) * (1 - alpha_background[x, y])) * 255
     
     return background
 
