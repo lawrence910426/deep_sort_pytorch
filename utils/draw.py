@@ -55,7 +55,7 @@ def draw_detector(background, detector: Line):
                 x = detector.x1 + i / foreground.shape[0] * detector.x2
                 y = detector.y1 + j / foreground.shape[1] * detector.y2
                 background[x, y, col] = alpha_foreground[i, j] * foreground[i, j, col] + \
-                    alpha_background * background[x, y, col] * (1 - alpha_foreground[i, j])     
+                    alpha_background[x, y] * background[x, y, col] * (1 - alpha_foreground[i, j])     
     
     return background
 
