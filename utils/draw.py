@@ -37,13 +37,28 @@ def draw_flow(img, flow):
         label = str(k) + ": " + str(flow[k])
         t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2 ,2)[0]
         cv2.putText(
-            img, label, (10, 10 + t_size[1] * (i + 1)), 
+            img, label, (10, 10 + (t_size[1] + 3) * (i + 1)), 
             cv2.FONT_HERSHEY_PLAIN, 2, [255,255,255], 2
         )
     return img
 
-def draw_detector(img, detector: Line):
-    return img
+foreground = cv2.imread('../counter/detector.png')
+def draw_detector(background, detector: Line):
+    # normalize alpha channels from 0-255 to 0-1
+    alpha_background = background[:,:,3] / 255.0
+    alpha_foreground = foreground[:,:,3] / 255.0
+
+    # set adjusted colors
+    for i in range(foreground.shape[0]):
+        for j in range(foreground.shape[1]):
+            for col in range(3):
+                x = detector.x1 + i / foreground.shape[0] * detector.x2
+                y = detector.y1 + j / foreground.shape[1] * detector.y2
+                background[x, y, col] = alpha_foreground[i, j] * foreground[i, j, col] + \
+                    alpha_background * background[x, y, col] * (1 - alpha_foreground[i, j])     
+                background[x, y, 3] = (1 - (1 - alpha_foreground[i, j]) * (1 - alpha_background[x, y])) * 255
+    
+    return background
 
 if __name__ == '__main__':
     for i in range(82):
