@@ -46,14 +46,14 @@ foreground = cv2.imread('counter/detector.png', cv2.IMREAD_UNCHANGED)
 def draw_detector(background, detector: Line):
     # normalize alpha channels from 0-255 to 0-1
     alpha_background = np.ones((background.shape[0], background.shape[1]))
-    alpha_foreground = foreground[:,:,3] / 255.0
+    alpha_foreground = foreground[:, :, 3] / 255.0
 
     # set adjusted colors
     for i in range(foreground.shape[0]):
         for j in range(foreground.shape[1]):
             for col in range(3):
-                x = int(detector.x1 + i / foreground.shape[0] * detector.x2)
-                y = int(detector.y1 + j / foreground.shape[1] * detector.y2)
+                x = int(detector.x1 + i * detector.x2 / foreground.shape[0])
+                y = int(detector.y1 + j * detector.y2 / foreground.shape[1])
                 if 0 <= x and x < background.shape[0] and \
                    0 <= y and y < background.shape[1]:
                     background[x, y, col] = alpha_foreground[i, j] * foreground[i, j, col] + \
