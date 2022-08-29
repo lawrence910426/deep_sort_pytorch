@@ -90,9 +90,6 @@ class Sharingan(object):
                 continue
             if idx_frame >= len(fixed_transform):
                 break
-            if idx_frame >= 150:
-                break
-            
 
             start = time.time()
 
@@ -108,10 +105,10 @@ class Sharingan(object):
             for i in range(fgMaskRaw.shape[0]):
                 for j in range(fgMaskRaw.shape[1]):
                     if fgMaskRaw[i][j] > 0.8:
-                        for h in range(-5, 6):
-                            for w in range(-5, 6):
-                                if 0 <= i + h and i + h < fgMaskRaw.shape[0] and \
-                                   0 <= j + w and j + w < fgMaskRaw.shape[1]:
+                        for x in range(-5, 6):
+                            for y in range(-5, 6):
+                                if 0 <= i + x and i + x < fgMaskRaw.shape[0] and \
+                                   0 <= j + y and j + y < fgMaskRaw.shape[1]:
                                    fgMask[i] = 1
             
             # mask out background
