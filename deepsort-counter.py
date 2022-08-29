@@ -98,21 +98,29 @@ class Sharingan(object):
 
             # fix image. stabilize then foreground masking
             fixed_im = stable_fixer.fix_frame(ori_im, fixed_transform[idx_frame], width, height)
+            
+            """
             fgMaskRaw = self.backSub.apply(fixed_im)
             fgMask = np.full(fgMaskRaw.shape, False, dtype=bool)
-            
+            """
+
             # a pixel become permeable iff (-5, +5) is foreground
+            """
             fgMaskRaw = fgMaskRaw > 0.8
             for w in range(-5, 6):
                 fgMaskHorz = np.roll(fgMaskRaw, w, axis=0)
                 for h in range(-5, 6):
                     fgMaskRolled = np.roll(fgMaskHorz, h, axis=1)
                     fgMask |= fgMaskRolled
-            
+            """
+
             # mask out background
+            """
             fgMask = np.stack([fgMask, fgMask, fgMask], axis=2)
             fg_im = np.multiply(fixed_im, fgMask)
-
+            """
+            fg_im = fixed_im
+            
             # convert to rgb
             fg_im_rgb = cv2.cvtColor(fg_im, cv2.COLOR_BGR2RGB)
 
@@ -142,12 +150,12 @@ class Sharingan(object):
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
                     detection_counter.update(bb_id, Box(*bb_xyxy))
                 
-                fg_im_rgb = draw_boxes(fg_im_rgb, bbox_xyxy, identities)
+                fg_im = draw_boxes(fg_im, bbox_xyxy, identities)
                 print("Flow:", detection_counter.getFlow())
                 results.append((idx_frame - 1, bbox_tlwh, identities))
 
-            fg_im_rgb = draw_flow(fg_im_rgb, detection_counter.getFlow())
-            fg_im_rgb = draw_detector(fg_im_rgb, None)
+            fg_im = draw_flow(fg_im, detection_counter.getFlow())
+            fg_im = draw_detector(fg_im, None)
 
             end = time.time()
 
