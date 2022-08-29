@@ -160,11 +160,11 @@ class Sharingan(object):
             end = time.time()
 
             if self.args.display:
-                cv2.imshow("test", fg_im_rgb)
+                cv2.imshow("test", fg_im)
                 cv2.waitKey(1)
 
             if self.args.save_path:
-                self.writer.write(fg_im_rgb)
+                self.writer.write(fg_im)
 
             # save results
             write_results(self.save_results_path, results, 'mot')
