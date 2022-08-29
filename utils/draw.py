@@ -42,7 +42,7 @@ def draw_flow(img, flow):
         )
     return img
 
-foreground = cv2.imread('counter/detector.png')
+foreground = cv2.imread('counter/detector.png', cv2.IMREAD_UNCHANGED)
 def draw_detector(background, detector: Line):
     # normalize alpha channels from 0-255 to 0-1
     alpha_background = np.ones((background.shape[0], background.shape[1]))
