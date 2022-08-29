@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from utils import Box, Line
+from utils.shapes import Box, Line
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
 
