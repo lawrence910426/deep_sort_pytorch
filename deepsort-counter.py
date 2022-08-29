@@ -121,7 +121,7 @@ class Sharingan(object):
             cls_conf = cls_conf[mask]
 
             # do tracking
-            outputs = self.deepsort.update(bbox_xywh, cls_conf, fg_im)
+            outputs = self.deepsort.update(bbox_xywh, cls_conf, fg_im_rgb)
 
             # draw boxes for visualization
             if len(outputs) > 0:
