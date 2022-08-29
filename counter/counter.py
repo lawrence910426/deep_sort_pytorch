@@ -1,5 +1,5 @@
 import numpy as np
-from utils import Box, Line
+from utils.shapes import Box, Line
 
 class Counter:
     def __init__(self, fps, detector: Line):
