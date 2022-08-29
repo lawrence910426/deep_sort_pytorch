@@ -74,9 +74,10 @@ class Sharingan(object):
         fixed_transform = stable_fixer.get_transform(self.vdo)
 
         # initialize detection line
+        detection_line = Line(*self.args.detector_line.split(","))
         detection_counter = Counter(
             self.vdo.get(cv2.CAP_PROP_FPS),
-            Line(*self.args.detector_line.split(","))
+            detection_line
         )
         width = int(self.vdo.get(cv2.CAP_PROP_FRAME_WIDTH)) 
         height = int(self.vdo.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -155,7 +156,7 @@ class Sharingan(object):
                 results.append((idx_frame - 1, bbox_tlwh, identities))
 
             fg_im = draw_flow(fg_im, detection_counter.getFlow())
-            fg_im = draw_detector(fg_im, None)
+            fg_im = draw_detector(fg_im, detection_line)
 
             end = time.time()
 
