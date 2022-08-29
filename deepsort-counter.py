@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'thirdparty/fast-reid'))
 
 from detector import build_detector
 from deep_sort import build_tracker
-from utils.draw import draw_boxes
+from utils.draw import draw_boxes, draw_flow
 from utils.parser import get_config
 from utils.log import get_logger
 from utils.io import write_results
@@ -119,13 +119,14 @@ class Sharingan(object):
                 bbox_tlwh = []
                 bbox_xyxy = outputs[:, :4]
                 identities = outputs[:, -1]
-                ori_im = draw_boxes(ori_im, bbox_xyxy, identities)
 
                 for i in range(len(outputs)):
                     bb_xyxy, bb_id = bbox_xyxy[i], identities[i]
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
                     detection_counter.update(bb_id, Box(*bb_xyxy))
                 
+                ori_im = draw_boxes(ori_im, bbox_xyxy, identities)
+                ori_im = draw_flow(ori_im, detection_counter.getFlow())
                 print("Flow:", detection_counter.getFlow())
                 results.append((idx_frame - 1, bbox_tlwh, identities))
 
@@ -164,7 +165,7 @@ def parse_args():
 
     # Sharingan specific parameters
     parser.add_argument("--detector_line", type=str, default='0,0,1000,1000')
-    parser.add_argument("--stable_period", type=int, default=300)
+    parser.add_argument("--stable_period", type=int, default=1000)
     parser.add_argument("--output_name", type=str, default='results')
     return parser.parse_args()
 
