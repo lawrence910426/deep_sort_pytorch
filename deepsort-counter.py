@@ -99,17 +99,15 @@ class Sharingan(object):
             # fix image. stabilize then foreground masking
             fixed_im = stable_fixer.fix_frame(ori_im, fixed_transform[idx_frame], width, height)
             fgMaskRaw = self.backSub.apply(fixed_im)
-            fgMask = np.zeros(fgMaskRaw.shape)
-
+            fgMask = np.full(fgMaskRaw.shape, False, dtype=bool)
+            
             # a pixel become permeable iff (-5, +5) is foreground
-            for i in range(fgMaskRaw.shape[0]):
-                for j in range(fgMaskRaw.shape[1]):
-                    if fgMaskRaw[i][j] > 0.8:
-                        for x in range(-5, 6):
-                            for y in range(-5, 6):
-                                if 0 <= i + x and i + x < fgMaskRaw.shape[0] and \
-                                   0 <= j + y and j + y < fgMaskRaw.shape[1]:
-                                   fgMask[i] = 1
+            fgMaskRaw = fgMaskRaw > 0.8
+            for w in range(-5, 6):
+                fgMaskHorz = np.roll(fgMaskRaw, w, axis=0)
+                for h in range(-5, 6):
+                    fgMaskRolled = np.roll(fgMaskHorz, h, axis=1)
+                    fgMask |= fgMaskRolled
             
             # mask out background
             fgMask = np.stack([fgMask, fgMask, fgMask], axis=2)
