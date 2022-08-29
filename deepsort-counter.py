@@ -147,7 +147,7 @@ class Sharingan(object):
                 results.append((idx_frame - 1, bbox_tlwh, identities))
 
             fg_im_rgb = draw_flow(fg_im_rgb, detection_counter.getFlow())
-            fg_im_rgb = draw_detector(fg_im_rgb, None, None, None, None)
+            fg_im_rgb = draw_detector(fg_im_rgb, None)
 
             end = time.time()
 
