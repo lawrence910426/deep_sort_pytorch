@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from utils import Box, Line
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
 
@@ -30,15 +31,18 @@ def draw_boxes(img, bbox, identities=None, offset=(0,0)):
     return img
 
 def draw_flow(img, flow):
-    keys = flow.keys()
+    keys = list(flow.keys())
     for i in range(len(keys)):
         k = keys[i]
-        label = k + ": " + flow[k]
+        label = str(k) + ": " + str(flow[k])
         t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2 ,2)[0]
         cv2.putText(
-            img, label, (t_size[0] + 3, t_size[1] * (i + 1) + 4), 
+            img, label, (10, 10 + t_size[1] * (i + 1)), 
             cv2.FONT_HERSHEY_PLAIN, 2, [255,255,255], 2
         )
+    return img
+
+def draw_detector(img, detector: Line):
     return img
 
 if __name__ == '__main__':

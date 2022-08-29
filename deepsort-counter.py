@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'thirdparty/fast-reid'))
 
 from detector import build_detector
 from deep_sort import build_tracker
-from utils.draw import draw_boxes, draw_flow
+from utils.draw import draw_boxes, draw_flow, draw_detector
 from utils.parser import get_config
 from utils.log import get_logger
 from utils.io import write_results
@@ -26,6 +26,7 @@ class Sharingan(object):
         self.args = args
         self.video_path = video_path
         self.logger = get_logger("root")
+        self.backSub = cv2.createBackgroundSubtractorKNN()
 
         use_cuda = args.use_cuda and torch.cuda.is_available()
         if not use_cuda:
@@ -82,23 +83,32 @@ class Sharingan(object):
 
         results = []
         idx_frame = 0
-        self.vdo.set(cv2.CAP_PROP_POS_FRAMES, 0) 
+        self.vdo.set(cv2.CAP_PROP_POS_FRAMES, 0)
         while self.vdo.grab():
             idx_frame += 1
             if idx_frame % self.args.frame_interval:
                 continue
             if idx_frame >= len(fixed_transform):
                 break
+            if idx_frame >= 150:
+                break
+            
 
             start = time.time()
 
-            # fetch image and fix image
+            # fetch image
             _, ori_im = self.vdo.retrieve()
+
+            # fix image. stabilize then foreground masking
             fixed_im = stable_fixer.fix_frame(ori_im, fixed_transform[idx_frame], width, height)
-            im = cv2.cvtColor(fixed_im, cv2.COLOR_BGR2RGB)
+            fgMask = self.backSub.apply(fixed_im)
+            fg_im = np.multiply(fixed_im, fgMask)
+
+            # convert to rgb
+            fg_im_rgb = cv2.cvtColor(fg_im, cv2.COLOR_BGR2RGB)
 
             # do detection
-            bbox_xywh, cls_conf, cls_ids = self.detector(im)
+            bbox_xywh, cls_conf, cls_ids = self.detector(fg_im_rgb)
 
             # select traffic class
             mask = False
@@ -107,12 +117,10 @@ class Sharingan(object):
             mask |= cls_ids == 7 # truck
 
             bbox_xywh = bbox_xywh[mask]
-            # bbox dilation just in case bbox too small, delete this line if using a better pedestrian detector
-            bbox_xywh[:, 3:] *= 1.2
             cls_conf = cls_conf[mask]
 
             # do tracking
-            outputs = self.deepsort.update(bbox_xywh, cls_conf, im)
+            outputs = self.deepsort.update(bbox_xywh, cls_conf, fg_im)
 
             # draw boxes for visualization
             if len(outputs) > 0:
@@ -125,19 +133,20 @@ class Sharingan(object):
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
                     detection_counter.update(bb_id, Box(*bb_xyxy))
                 
-                ori_im = draw_boxes(ori_im, bbox_xyxy, identities)
-                ori_im = draw_flow(ori_im, detection_counter.getFlow())
+                fg_im = draw_boxes(fg_im, bbox_xyxy, identities)
+                fg_im = draw_flow(fg_im, detection_counter.getFlow())
+                fg_im = draw_detector(fg_im, None, None, None, None)
                 print("Flow:", detection_counter.getFlow())
                 results.append((idx_frame - 1, bbox_tlwh, identities))
 
             end = time.time()
 
             if self.args.display:
-                cv2.imshow("test", ori_im)
+                cv2.imshow("test", fg_im)
                 cv2.waitKey(1)
 
             if self.args.save_path:
-                self.writer.write(ori_im)
+                self.writer.write(fg_im)
 
             # save results
             write_results(self.save_results_path, results, 'mot')
