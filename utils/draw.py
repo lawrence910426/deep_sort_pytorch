@@ -1,6 +1,8 @@
+from turtle import back
 import numpy as np
 import cv2
 from utils.shapes import Box, Line
+from numba import njit, prange
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
 
@@ -44,10 +46,15 @@ def draw_flow(img, flow):
 
 foreground = cv2.imread('counter/detector.png', cv2.IMREAD_UNCHANGED)
 def draw_detector(background, detector: Line):
+    render_detector(background, detector.x1, detector.y1, detector.x2, detector.y2)
+    return background
+
+@njit(parallel=True)
+def render_detector(background, x1, y1, x2, y2):
     alpha_background = np.ones((background.shape[0], background.shape[1]))
     alpha_foreground = foreground[:, :, 3] / 255.0
 
-    u1, u2 = detector.x2 - detector.x1, detector.y2 - detector.y1
+    u1, u2 = x2 - x1, y2 - y1
     length = np.sqrt(u1 ** 2 + u2 ** 2)
     v1, v2 = u2 / length * 30, -u1 / length * 30
     det = u1 * v2 - u2 * v1
@@ -56,13 +63,12 @@ def draw_detector(background, detector: Line):
         for j in range(background.shape[1]):
             for col in range(3):
                 # since u and v are orthogonal, det must not be 0.
-                I, J = i - detector.x1, j - detector.y1
+                I, J = i - x1, j - y1
                 A, B = (v2 * I - v1 * J) / det, (-u2 * I + u1 * J) / det
                 x, y = int(A * foreground.shape[0]), int(B * foreground.shape[1])
                 if 0 <= x <= foreground.shape[0] - 1 and 0 <= y <= foreground.shape[1] - 1:
                     background[i, j, col] = alpha_foreground[x, y] * foreground[x, y, col] + \
                         alpha_background[i, j] * background[i, j, col] * (1 - alpha_foreground[x, y])
-    return background
 
 if __name__ == '__main__':
     for i in range(82):
