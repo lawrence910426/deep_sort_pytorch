@@ -57,8 +57,8 @@ def draw_detector(background, detector: Line):
 @cuda.jit
 def render_detector(background, foreground, x1, y1, x2, y2):
     u1, u2 = x2 - x1, y2 - y1
-    length = math.sqrt(u1 ** 2 + u2 ** 2)
-    v1, v2 = u2 / length * 30, -u1 / length * 30
+    scale = foreground.shape[1] / foreground.shape[0]
+    v1, v2 = u2 * scale, -u1 * scale
     det = u1 * v2 - u2 * v1
 
     tx = cuda.threadIdx.x
@@ -71,7 +71,7 @@ def render_detector(background, foreground, x1, y1, x2, y2):
         i = index % background.shape[0]
         j = (index // background.shape[0]) % background.shape[1]
         col = (index // background.shape[0] // background.shape[1]) % 3
-        
+
         # since u and v are orthogonal, det must not be 0.
         I, J = i - x1, j - y1
         A, B = (v2 * I - v1 * J) / det, (-u2 * I + u1 * J) / det
