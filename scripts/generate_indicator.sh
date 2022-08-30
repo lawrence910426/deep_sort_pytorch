@@ -10,4 +10,4 @@ M 10 120 L 30 140 L 30 145 L 10 125 L 10 0
 M 10 140 L 30 160 L 30 165 L 10 145 L 10 0
 M 10 160 L 30 180 L 30 185 L 10 165 L 10 0
 M 5 180 L 30 200 L 30 205 L 5 185 L 10 0
-Z'" ../counter/detector.png
+Z'" ../counter/detector.svg

@@ -44,21 +44,25 @@ def draw_flow(img, flow):
 
 foreground = cv2.imread('counter/detector.png', cv2.IMREAD_UNCHANGED)
 def draw_detector(background, detector: Line):
-    # normalize alpha channels from 0-255 to 0-1
     alpha_background = np.ones((background.shape[0], background.shape[1]))
     alpha_foreground = foreground[:, :, 3] / 255.0
 
-    # set adjusted colors
-    for i in range(foreground.shape[0]):
-        for j in range(foreground.shape[1]):
+    u1, u2 = detector.x2 - detector.x1, detector.y2 - detector.y1
+    length = np.sqrt(u1 ** 2 + u2 ** 2)
+    v1, v2 = u2 / length * 30, -u1 / length * 30
+    det = u1 * v2 - u2 * v1
+
+    for i in range(background.shape[0]):
+        for j in range(background.shape[1]):
             for col in range(3):
-                x = int(detector.x1 + i * detector.x2 / foreground.shape[0])
-                y = int(detector.y1 + j * detector.y2 / foreground.shape[1])
-                if 0 <= x and x < background.shape[0] and \
-                   0 <= y and y < background.shape[1]:
-                    background[x, y, col] = alpha_foreground[i, j] * foreground[i, j, col] + \
-                        alpha_background[x, y] * background[x, y, col] * (1 - alpha_foreground[i, j])     
-    
+                # since u and v are orthogonal, det must not be 0.
+                I, J = i - detector.x1, j - detector.y1
+                A, B = (v2 * I - v1 * J) / det, (-u2 * I + u1 * J) / det
+                x, y = int(A * foreground.shape[0]), int(B * foreground.shape[1])
+                if 0 <= x <= foreground.shape[0] - 1 and 0 <= y <= foreground.shape[1] - 1:
+                    print(i, j, x, y)
+                    background[i, j, col] = alpha_foreground[x, y] * foreground[x, y, col] + \
+                        alpha_background[i, j] * background[i, j, col] * (1 - alpha_foreground[x, y])
     return background
 
 if __name__ == '__main__':
