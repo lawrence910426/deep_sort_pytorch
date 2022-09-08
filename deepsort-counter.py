@@ -71,8 +71,8 @@ class Sharingan(object):
 
     def run(self):
         # calculate the stabilization transform
-        stable_fixer = Stabilizer(self.args.stable_period)
-        fixed_transform = stable_fixer.get_transform(self.vdo, Progress(0, 10))
+        stable_fixer = Stabilizer(self.args.stable_period, Progress(0, 10))
+        fixed_transform = stable_fixer.get_transform(self.vdo)
         progress = Progress(10, 99)
 
         # initialize detection line
