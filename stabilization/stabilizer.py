@@ -1,9 +1,12 @@
 import numpy as np
 import cv2
 
+from utils.progress import Progress
+
 class Stabilizer:
-	def __init__(self, smoothing_radius):
+	def __init__(self, smoothing_radius, progress):
 		self.smoothing = smoothing_radius
+		self.progress = progress
 
 	def movingAverage(self, curve, radius): 
 		window_size = 2 * radius + 1
@@ -64,7 +67,9 @@ class Stabilizer:
 			transforms[i] = [dx, dy, da] 
 
 			prev_gray = curr_gray
-			print("Frame: " + str(i) +  "/" + str(n_frames) + " -  Tracked points : " + str(len(prev_pts)))
+
+			progress_status = self.progress.get_progress(i / (n_frames - 2) * 100)
+			print(f"Frame: {str(i)} / {str(n_frames - 2)}, Pts: {str(len(prev_pts))}, " + progress_status)
 
 		trajectory = np.cumsum(transforms, axis=0) 
 		smoothed_trajectory = self.smooth(trajectory)

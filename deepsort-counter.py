@@ -16,6 +16,7 @@ from utils.draw import draw_boxes, draw_flow, draw_detector
 from utils.parser import get_config
 from utils.log import get_logger
 from utils.io import write_results
+from utils.progress import Progress
 from stabilization.stabilizer import Stabilizer
 from counter.counter import Counter, Box, Line
 
@@ -71,7 +72,8 @@ class Sharingan(object):
     def run(self):
         # calculate the stabilization transform
         stable_fixer = Stabilizer(self.args.stable_period)
-        fixed_transform = stable_fixer.get_transform(self.vdo)
+        fixed_transform = stable_fixer.get_transform(self.vdo, Progress(0, 10))
+        progress = Progress(10, 99)
 
         # initialize detection line
         detection_line = Line(*self.args.detector_line.split(","))
@@ -152,7 +154,6 @@ class Sharingan(object):
                     detection_counter.update(bb_id, Box(*bb_xyxy))
                 
                 fg_im = draw_boxes(fg_im, bbox_xyxy, identities)
-                print("Flow:", detection_counter.getFlow())
                 results.append((idx_frame - 1, bbox_tlwh, identities))
 
             fg_im = draw_flow(fg_im, detection_counter.getFlow())
@@ -171,8 +172,11 @@ class Sharingan(object):
             write_results(self.save_results_path, results, 'mot')
 
             # logging
-            self.logger.info("time: {:.03f}s, fps: {:.03f}, detection numbers: {}, tracking numbers: {}" \
-                             .format(end - start, 1 / (end - start), bbox_xywh.shape[0], len(outputs)))
+            log = "time: {:.03f}s, fps: {:.03f}, detection numbers: {}, tracking numbers: {}, " \
+                    .format(end - start, 1 / (end - start), bbox_xywh.shape[0], len(outputs))
+            log += progress.get_progress(idx_frame / len(fixed_transform))
+    
+    print(f"Flow: {detection_counter.getFlow()}, " + Progress(99, 100).get_progress(100))
 
 
 def parse_args():
