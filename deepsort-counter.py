@@ -175,6 +175,7 @@ class Sharingan(object):
             log = "time: {:.03f}s, fps: {:.03f}, detection numbers: {}, tracking numbers: {}, " \
                     .format(end - start, 1 / (end - start), bbox_xywh.shape[0], len(outputs))
             log += progress.get_progress(idx_frame / len(fixed_transform))
+            self.logger.info(log)
     
         print(f"Flow: {detection_counter.getFlow()}, " + Progress(99, 100).get_progress(100))
 
